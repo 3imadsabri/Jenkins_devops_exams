@@ -16,5 +16,14 @@ pipeline {
             }
         }
 
+        stage('Build Images') {
+            steps {
+                sh '''
+                docker build -t imadsabri01/movie-service:latest ./movie-service
+                docker build -t imadsabri01/cast-service:latest ./cast-service
+                '''
+            }
+        }
+
     }
 }
