@@ -10,5 +10,11 @@ pipeline {
             }
         }
 
+        stage('Docker Validation') {
+            steps {
+                sh 'docker compose config'
+            }
+        }
+
     }
 }
