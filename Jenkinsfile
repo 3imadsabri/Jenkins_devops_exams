@@ -78,27 +78,26 @@ pipeline {
             }
         }
 
-        stage('Manual Approval') {
-            when {
-                branch 'master'
-            }
-            steps {
-                input 'Deploy to Production ?'
-            }
-        }
+	stage('Manual Approval') {
+ 	   steps {
+ 	       timeout(time: 15, unit: 'MINUTES') {
+        	    input(
+        	        message: 'Do you want to deploy to Production?',
+      		        ok: 'YES'
+           	    )
+ 	       }
+	    }
+	}
 
-        stage('Deploy PROD') {
-            when {
-                branch 'master'
-            }
-            steps {
-                sh '''
-                helm upgrade --install movie-release ./charts \
-                --namespace prod \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
-                '''
-            }
-        }
+	stage('Deploy PROD') {
+	    steps {
+	        sh '''
+	        helm upgrade --install movie-release ./charts \
+	        --namespace prod \
+	        --set image.repository=imadsabri01/movie-service \
+	        --set image.tag=latest
+	        '''
+	    }
+	}
     }
 }
