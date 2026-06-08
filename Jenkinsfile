@@ -24,25 +24,81 @@ pipeline {
                 '''
             }
         }
-	stage('Push Images') {
-	    steps {
-	        withCredentials([usernamePassword(
-	            credentialsId: 'dockerhub-creds',
-	            usernameVariable: 'DOCKER_USER',
-	            passwordVariable: 'DOCKER_PASS'
-	        )]) {
 
-        	    sh '''
-	            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        stage('Push Images') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
 
-        	    docker push imadsabri01/movie-service:latest
-	            docker push imadsabri01/cast-service:latest
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
-	            docker logout
-	            '''
-	        }
-	    }
-	}	
+                    docker push imadsabri01/movie-service:latest
+                    docker push imadsabri01/cast-service:latest
 
+                    docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy DEV') {
+            steps {
+                sh '''
+                helm upgrade --install movie-release ./charts \
+                --namespace dev \
+                --set image.repository=imadsabri01/movie-service \
+                --set image.tag=latest
+                '''
+            }
+        }
+
+        stage('Deploy QA') {
+            steps {
+                sh '''
+                helm upgrade --install movie-release ./charts \
+                --namespace qa \
+                --set image.repository=imadsabri01/movie-service \
+                --set image.tag=latest
+                '''
+            }
+        }
+
+        stage('Deploy STAGING') {
+            steps {
+                sh '''
+                helm upgrade --install movie-release ./charts \
+                --namespace staging \
+                --set image.repository=imadsabri01/movie-service \
+                --set image.tag=latest
+                '''
+            }
+        }
+
+        stage('Manual Approval') {
+            when {
+                branch 'master'
+            }
+            steps {
+                input 'Deploy to Production ?'
+            }
+        }
+
+        stage('Deploy PROD') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh '''
+                helm upgrade --install movie-release ./charts \
+                --namespace prod \
+                --set image.repository=imadsabri01/movie-service \
+                --set image.tag=latest
+                '''
+            }
+        }
     }
 }
