@@ -1,12 +1,22 @@
 pipeline {
+
     agent any
+
+    environment {
+        DOCKER_USER = "imadsabri01"
+        MOVIE_IMAGE = "movie-service"
+        CAST_IMAGE = "cast-service"
+        IMAGE_TAG = "v.${BUILD_ID}.0"
+    }
 
     stages {
 
         stage('Verify Workspace') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
+                sh '''
+                pwd
+                ls -la
+                '''
             }
         }
 
@@ -19,25 +29,28 @@ pipeline {
         stage('Build Images') {
             steps {
                 sh '''
-                docker build -t imadsabri01/movie-service:latest ./movie-service
-                docker build -t imadsabri01/cast-service:latest ./cast-service
+                docker build -t $DOCKER_USER/$MOVIE_IMAGE:$IMAGE_TAG ./movie-service
+                docker build -t $DOCKER_USER/$CAST_IMAGE:$IMAGE_TAG ./cast-service
                 '''
             }
         }
 
         stage('Push Images') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-creds',
+                        usernameVariable: 'DOCKER_LOGIN',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
 
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_LOGIN" --password-stdin
 
-                    docker push imadsabri01/movie-service:latest
-                    docker push imadsabri01/cast-service:latest
+                    docker push $DOCKER_USER/$MOVIE_IMAGE:$IMAGE_TAG
+                    docker push $DOCKER_USER/$CAST_IMAGE:$IMAGE_TAG
 
                     docker logout
                     '''
@@ -46,59 +59,108 @@ pipeline {
         }
 
         stage('Deploy DEV') {
+
+            environment {
+                KUBECONFIG = credentials('config.txt')
+            }
+
             steps {
+
                 sh '''
+                mkdir -p .kube
+                cp $KUBECONFIG .kube/config
+
                 helm upgrade --install movie-release ./charts \
                 --namespace dev \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+                --set image.repository=$DOCKER_USER/$MOVIE_IMAGE \
+                --set image.tag=$IMAGE_TAG
                 '''
             }
         }
 
         stage('Deploy QA') {
+
+            environment {
+                KUBECONFIG = credentials('config.txt')
+            }
+
             steps {
+
                 sh '''
+                mkdir -p .kube
+                cp $KUBECONFIG .kube/config
+
                 helm upgrade --install movie-release ./charts \
                 --namespace qa \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+                --set image.repository=$DOCKER_USER/$MOVIE_IMAGE \
+                --set image.tag=$IMAGE_TAG
                 '''
             }
         }
 
         stage('Deploy STAGING') {
+
+            environment {
+                KUBECONFIG = credentials('config.txt')
+            }
+
             steps {
+
                 sh '''
+                mkdir -p .kube
+                cp $KUBECONFIG .kube/config
+
                 helm upgrade --install movie-release ./charts \
                 --namespace staging \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+                --set image.repository=$DOCKER_USER/$MOVIE_IMAGE \
+                --set image.tag=$IMAGE_TAG
                 '''
             }
         }
 
         stage('Manual Approval') {
-            when {
-                branch 'master'
-            }
+
             steps {
-                input 'Deploy to Production ?'
+
+                timeout(time: 15, unit: 'MINUTES') {
+
+                    input(
+                        message: 'Do you want to deploy to Production?',
+                        ok: 'YES'
+                    )
+                }
             }
         }
 
         stage('Deploy PROD') {
-            when {
-                branch 'master'
+
+            environment {
+                KUBECONFIG = credentials('config.txt')
             }
+
             steps {
+
                 sh '''
+                mkdir -p .kube
+                cp $KUBECONFIG .kube/config
+
                 helm upgrade --install movie-release ./charts \
                 --namespace prod \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+                --set image.repository=$DOCKER_USER/$MOVIE_IMAGE \
+                --set image.tag=$IMAGE_TAG
                 '''
             }
+        }
+    }
+
+    post {
+
+        success {
+            echo 'Pipeline completed successfully'
+        }
+
+        failure {
+            echo 'Pipeline failed'
         }
     }
 }
