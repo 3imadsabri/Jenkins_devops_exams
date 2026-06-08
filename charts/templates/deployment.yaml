@@ -33,6 +33,12 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DATABASE_URI
+              value: "{{ .Values.databaseUri }}"
+
+            - name: CAST_SERVICE_HOST_URL
+              value: "{{ .Values.castServiceUrl }}"
           ports:
             - name: http
               containerPort: 8000

@@ -83,3 +83,7 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+databaseUri: "postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev"
+
+castServiceUrl: "http://cast-service:8000/api/v1/casts/"  
