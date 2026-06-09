@@ -4,11 +4,31 @@
 
 replicaCount: 3
 
-image:
-  repository: sajjadhz/fastapiapp
-  pullPolicy: IfNotPresent
+  #image:
+  #  repository: sajjadhz/fastapiapp
+  #  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  #  tag: "latest"
+movie:
+  image:
+    repository: imadsabri01/movie-service
+    tag: latest
+
+cast:
+  image:
+    repository: imadsabri01/cast-service
+    tag: latest
+
+movieDb:
+  user: movie_db_username
+  password: movie_db_password
+  database: movie_db_dev
+
+castDb:
+  user: cast_db_username
+  password: cast_db_password
+  database: cast_db_dev
+
 
 imagePullSecrets: 
   - name: "regcred"
@@ -84,6 +104,6 @@ tolerations: []
 
 affinity: {}
 
-databaseUri: "postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev"
+databaseUri: "postgresql://movie_db_username:movie_db_password@movie-db/movie_db_dev"
 
 castServiceUrl: "http://cast-service:8000/api/v1/casts/"  

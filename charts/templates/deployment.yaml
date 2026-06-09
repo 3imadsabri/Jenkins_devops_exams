@@ -45,11 +45,11 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /api/v1/checkapi
+              path: /api/v1/movies/
               port: http
           readinessProbe:
             httpGet:
-              path: /api/v1/checkapi
+              path: /api/v1/movies/ 
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

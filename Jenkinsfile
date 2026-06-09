@@ -48,10 +48,12 @@ pipeline {
         stage('Deploy DEV') {
             steps {
                 sh '''
-                helm upgrade --install movie-release ./charts \
-                --namespace dev \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+		helm upgrade --install movie-release ./charts \
+		--namespace dev \
+		--set movie.image.repository=imadsabri01/movie-service \
+		--set movie.image.tag=latest \
+		--set cast.image.repository=imadsabri01/cast-service \
+		--set cast.image.tag=latest
                 '''
             }
         }
@@ -59,10 +61,12 @@ pipeline {
         stage('Deploy QA') {
             steps {
                 sh '''
-                helm upgrade --install movie-release ./charts \
-                --namespace qa \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+		helm upgrade --install movie-release ./charts \
+		--namespace dev \
+		--set movie.image.repository=imadsabri01/movie-service \
+		--set movie.image.tag=latest \
+		--set cast.image.repository=imadsabri01/cast-service \
+		--set cast.image.tag=latest
                 '''
             }
         }
@@ -70,10 +74,12 @@ pipeline {
         stage('Deploy STAGING') {
             steps {
                 sh '''
-                helm upgrade --install movie-release ./charts \
-                --namespace staging \
-                --set image.repository=imadsabri01/movie-service \
-                --set image.tag=latest
+		helm upgrade --install movie-release ./charts \
+	        --namespace dev \
+	        --set movie.image.repository=imadsabri01/movie-service \
+	        --set movie.image.tag=latest \
+	        --set cast.image.repository=imadsabri01/cast-service \
+	        --set cast.image.tag=latest
                 '''
             }
         }
@@ -93,10 +99,12 @@ pipeline {
 	    steps {
 	        sh '''
 	        helm upgrade --install movie-release ./charts \
-	        --namespace prod \
-	        --set image.repository=imadsabri01/movie-service \
-	        --set image.tag=latest
-	        '''
+	        --namespace dev \
+	        --set movie.image.repository=imadsabri01/movie-service \
+	        --set movie.image.tag=latest \
+	        --set cast.image.repository=imadsabri01/cast-service \
+	        --set cast.image.tag=latest
+		'''
 	    }
 	}
     }
