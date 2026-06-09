@@ -5,15 +5,16 @@ metadata:
   name: movie-service
 
 spec:
-  type: {{ .Values.service.type }}
+
+  type: NodePort
 
   selector:
     app: movie-service
 
   ports:
+
   - port: 80
+
     targetPort: 8000
 
-{{- if eq .Values.service.type "NodePort" }}
-    nodePort: {{ .Values.service.nodePort }}
-{{- end }}
+    nodePort: 30007

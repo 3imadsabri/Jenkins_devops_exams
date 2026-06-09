@@ -49,6 +49,7 @@ pipeline {
             steps {
                 sh '''
 		helm upgrade --install movie-release ./charts \
+		-f charts/environments/values-dev.yaml \
 		--namespace dev \
 		--set movie.image.repository=imadsabri01/movie-service \
 		--set movie.image.tag=latest \
@@ -62,6 +63,7 @@ pipeline {
             steps {
                 sh '''
 		helm upgrade --install movie-release ./charts \
+		-f charts/environments/values-qa.yaml \
 		--namespace qa \
 		--set movie.image.repository=imadsabri01/movie-service \
 		--set movie.image.tag=latest \
@@ -75,6 +77,7 @@ pipeline {
             steps {
                 sh '''
 		helm upgrade --install movie-release ./charts \
+		-f charts/environments/values-staging.yaml \
 	        --namespace staging \
 	        --set movie.image.repository=imadsabri01/movie-service \
 	        --set movie.image.tag=latest \
@@ -99,6 +102,7 @@ pipeline {
 	    steps {
 	        sh '''
 	        helm upgrade --install movie-release ./charts \
+		-f charts/environments/values-prod.yaml \
 	        --namespace prod \
 	        --set movie.image.repository=imadsabri01/movie-service \
 	        --set movie.image.tag=latest \
