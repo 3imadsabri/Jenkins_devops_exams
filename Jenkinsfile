@@ -62,7 +62,7 @@ pipeline {
             steps {
                 sh '''
 		helm upgrade --install movie-release ./charts \
-		--namespace dev \
+		--namespace qa \
 		--set movie.image.repository=imadsabri01/movie-service \
 		--set movie.image.tag=latest \
 		--set cast.image.repository=imadsabri01/cast-service \
@@ -75,7 +75,7 @@ pipeline {
             steps {
                 sh '''
 		helm upgrade --install movie-release ./charts \
-	        --namespace dev \
+	        --namespace staging \
 	        --set movie.image.repository=imadsabri01/movie-service \
 	        --set movie.image.tag=latest \
 	        --set cast.image.repository=imadsabri01/cast-service \
@@ -99,7 +99,7 @@ pipeline {
 	    steps {
 	        sh '''
 	        helm upgrade --install movie-release ./charts \
-	        --namespace dev \
+	        --namespace prod \
 	        --set movie.image.repository=imadsabri01/movie-service \
 	        --set movie.image.tag=latest \
 	        --set cast.image.repository=imadsabri01/cast-service \
